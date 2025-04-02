@@ -1,132 +1,22 @@
+<!--
+  👋 Hello! This is an ml5.js example made and shared with ❤️.
+  Learn more about the ml5.js project: https://ml5js.org/
+  ml5.js license and Code of Conduct: https://github.com/ml5js/ml5-next-gen/blob/main/LICENSE.md
+
+  This example demonstrates face tracking on live video through ml5.faceMesh.
+-->
+
 <!DOCTYPE html>
 <html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>WebAR with Face Detection</title>
-    <script src="https://aframe.io/releases/1.2.0/aframe.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/face-api.js"></script>
-    <style>
-        body {
-            margin: 0;
-            overflow: hidden;
-        }
-        a-scene {
-            width: 100%;
-            height: 100%;
-            position: absolute;
-        }
-        #message {
-            position: absolute;
-            top: 20px;
-            left: 20px;
-            font-size: 18px;
-            color: white;
-            background-color: rgba(0, 0, 0, 0.5);
-            padding: 10px;
-        }
-    </style>
-</head>
-<body>
-
-    <!-- Instructions -->
-    <div id="message">Waiting for camera access...</div>
-
-    <!-- A-Frame scene for AR -->
-    <a-scene embedded>
-        <!-- Camera for AR view -->
-        <a-entity camera look-controls></a-entity>
-
-        <!-- Example AR object -->
-        <a-box position="0 1 -3" color="#4CC3D9" id="face-object"></a-box>
-    </a-scene>
-
-    <script>
-        // Load Face-api.js models
-        async function setupFaceDetection() {
-            try {
-                console.log('Loading SSD MobileNet v1 model...');
-                await faceapi.nets.ssdMobilenetv1.loadFromUri('/models');
-                console.log('Loading Face Landmark 68 model...');
-                await faceapi.nets.faceLandmark68Net.loadFromUri('/models');
-                console.log('Loading Face Recognition model...');
-                await faceapi.nets.faceRecognitionNet.loadFromUri('/models');
-                console.log('Loading Age Gender model...');
-                await faceapi.nets.ageGenderNet.loadFromUri('/models');
-                console.log('Loading Face Expression model...');
-                await faceapi.nets.faceExpressionNet.loadFromUri('/models');
-                console.log('All models loaded!');
-                startFaceDetection();
-            } catch (error) {
-                console.error('Error loading models: ', error);
-            }
-        }
-
-        // Start face detection on the webcam feed
-        async function startFaceDetection() {
-            const video = document.createElement('video');
-            document.body.append(video);
-            video.width = 640;
-            video.height = 480;
-
-            // Set up the webcam feed
-            try {
-                console.log('Requesting webcam access...');
-                const stream = await navigator.mediaDevices.getUserMedia({ video: {} });
-                console.log('Webcam access granted');
-                video.srcObject = stream;
-                video.play();
-
-                // Once the video is playing, start detecting faces
-                video.onloadedmetadata = () => {
-                    console.log('Video metadata loaded, starting face detection...');
-                    detectFace(video);
-                };
-            } catch (err) {
-                console.error('Error accessing webcam: ', err);
-                document.getElementById('message').textContent = 'Error accessing webcam! Please allow access.';
-            }
-        }
-
-        // Detect the face position and trigger AR interaction
-        async function detectFace(video) {
-            const canvas = faceapi.createCanvasFromMedia(video);
-            document.body.append(canvas);
-
-            canvas.width = video.width;
-            canvas.height = video.height;
-
-            setInterval(async () => {
-                const detections = await faceapi.detectAllFaces(video)
-                    .withFaceLandmarks()
-                    .withFaceDescriptors()
-                    .withAgeAndGender()
-                    .withFaceExpressions();
-
-                console.log('Detected faces: ', detections); // Log detections
-
-                if (detections.length > 0) {
-                    const face = detections[0];
-                    const x = face.detection.box.x + face.detection.box.width / 2;
-                    const y = face.detection.box.y + face.detection.box.height / 2;
-
-                    // Update AR object position based on face position
-                    document.querySelector('#face-object').setAttribute('position', `${(x - video.width / 2) / 20} ${(y - video.height / 2) / 20} -3`);
-
-                    // Display age, gender, and expression info
-                    const message = `Age: ${Math.round(face.age)} Gender: ${face.gender} Expression: ${Object.keys(face.expressions).reduce((a, b) => face.expressions[a] > face.expressions[b] ? a : b)}`;
-                    document.getElementById('message').textContent = message;
-                } else {
-                    document.getElementById('message').textContent = 'No face detected, please try again!';
-                }
-            }, 100);
-        }
-
-        // Initialize face detection
-        window.onload = () => {
-            setupFaceDetection();
-        };
-    </script>
-
-</body>
+  <head>
+    <meta charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>ml5.js faceMesh Webcam Example</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.9.4/p5.min.js"></script>
+    <script src="https://unpkg.com/ml5@1/dist/ml5.min.js"></script>
+  </head>
+  <body>
+    <script src="sketch.js"></script>
+  </body>
 </html>
